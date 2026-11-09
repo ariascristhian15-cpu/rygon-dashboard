@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: rygan-dashboard
+    env: static
+    staticPublishPath: ./
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /templates/index.html
