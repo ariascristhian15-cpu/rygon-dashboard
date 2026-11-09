@@ -190,6 +190,10 @@
   },
   "active": "6b17d2b3346707cc",
   "lastOpenFiles": [
+    "app.py",
+    "static/app.py",
+    "templates/index.html",
+    "templates",
     "index.html",
     "render.yaml",
     "jsconfig.json",
