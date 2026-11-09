@@ -1,0 +1,208 @@
+{
+  "main": {
+    "id": "3eefc409b820ac58",
+    "type": "split",
+    "children": [
+      {
+        "id": "1d2b71085d90d6f2",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "6b17d2b3346707cc",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "obsidian_vault/Rygon_Studio/Planificador_Redes.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Planificador_Redes"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "12c85f972c7c72d2",
+    "type": "split",
+    "children": [
+      {
+        "id": "d5164019cc163ead",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "e81644a80982646d",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Explorador de archivos"
+            }
+          },
+          {
+            "id": "d722456679324add",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Buscar"
+            }
+          },
+          {
+            "id": "f5dbc87ea6fe0854",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-bookmark",
+              "title": "Marcadores"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "5be61c074bde7a1b",
+    "type": "split",
+    "children": [
+      {
+        "id": "8eb5dc7e9a0925df",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "94277a926f583841",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "obsidian_vault/Rutinas/Horario_Semanal.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Enlaces entrantes"
+            }
+          },
+          {
+            "id": "c255f82df9eb965d",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "obsidian_vault/Rutinas/Horario_Semanal.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Enlaces salientes"
+            }
+          },
+          {
+            "id": "aab0785b6c07564e",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Etiquetas"
+            }
+          },
+          {
+            "id": "99ff57534df5344f",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "Todas las propiedades"
+            }
+          },
+          {
+            "id": "ea7e39f1192d2a1c",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "obsidian_vault/Rutinas/Horario_Semanal.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Esquema"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Abrir selector rápido": false,
+      "graph:Abrir vista gráfica": false,
+      "canvas:Crear nuevo lienzo": false,
+      "daily-notes:Abrir la nota de hoy": false,
+      "templates:Insertar plantilla": false,
+      "command-palette:Abrir paleta de comandos": false,
+      "bases:Crear nueva base": false
+    }
+  },
+  "active": "6b17d2b3346707cc",
+  "lastOpenFiles": [
+    "jsconfig.json",
+    "obsidian_vault/Estudios/Electronica_Hardware.tmp",
+    "obsidian_vault/Rygon_Studio/Inventario.md",
+    "obsidian_vault/Rygon_Studio/Inspiracion_Moodboard.md",
+    "obsidian_vault/Notas/Bienvenida.md",
+    "obsidian_vault/Rutinas/Habitos_Diarios.md",
+    "obsidian_vault/Rutinas/Horario_Semanal.md",
+    "obsidian_vault/Rygon_Studio/Taller_Tareas.md",
+    "obsidian_vault/Rygon_Studio/Planificador_Redes.md",
+    "obsidian_vault/Estudios/Diseno_Creativo.md",
+    "obsidian_vault/Estudios/Ingenieria_Sistemas.md",
+    "obsidian_vault/Estudios/Electronica_Hardware.md",
+    "obsidian_vault/Dashboard_Resumen.md",
+    "README.md"
+  ]
+}

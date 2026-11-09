@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>THIAN-CORE // RETRO WORKSTATION</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23ff7a29'/><text y='70' font-size='65' x='15'>👾</text></svg>">
+</head>
+<body>
+
+  <!-- ==========================================
+       HEADER PRINCIPAL TIPO TERMINAL RETRO
+       ========================================== -->
+  <header class="terminal-header">
+    <div class="header-container">
+      <div class="brand-section">
+        <div class="brand-icon">👾</div>
+        <div class="brand-titles">
+          <h1>THIAN-CORE // WORKSTATION</h1>
+          <div class="brand-subtitle">OBSIDIAN PRODUCTIVITY MATRIX :: FEDORA LINUX</div>
+        </div>
+      </div>
+
+      <div class="header-status-panel">
+        <div class="vault-badge" id="vault-badge">
+          <div class="led-indicator"></div>
+          <span id="vault-badge-text">Obsidian: Bóveda Activa</span>
+        </div>
+
+        <div class="header-actions">
+          <button id="btn-sound-toggle" class="pixel-btn btn-sm" onclick="toggleSoundButton()">🔊 AUDIO: ON</button>
+          <button class="pixel-btn btn-green btn-sm" onclick="refreshAllData(true)">⚡ SINCRONIZAR</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================
+       BARRA DE XP Y GAMIFICACIÓN RETRO
+       ========================================== -->
+  <section class="xp-banner">
+    <div class="xp-container">
+      <div class="xp-level-info">
+        <span id="xp-level-display">LVL 1 // HACKER-ARTISAN</span>
+      </div>
+      <div class="xp-progress-bar-container">
+        <div class="xp-progress-bar-fill" id="xp-fill"></div>
+      </div>
+      <div class="xp-stat-text" id="xp-numbers">0 / 500 XP (0%)</div>
+    </div>
+  </section>
+
+  <!-- ==========================================
+       CONTENEDOR CENTRAL
+       ========================================== -->
+  <main class="main-wrapper">
+
+    <!-- 1. TARJETAS DE RESUMEN (STATS CARDS) -->
+    <section class="stats-grid">
+      <div class="stat-card card-primary">
+        <div class="stat-header">
+          <span class="stat-label">Total Tareas</span>
+          <span class="stat-icon">📋</span>
+        </div>
+        <div class="stat-value" id="stat-total">--</div>
+        <div class="stat-footer">Bóveda Completa</div>
+      </div>
+
+      <div class="stat-card card-success">
+        <div class="stat-header">
+          <span class="stat-label">Completadas</span>
+          <span class="stat-icon">✅</span>
+        </div>
+        <div class="stat-value" id="stat-completed" style="color:var(--retro-green);">--</div>
+        <div class="stat-footer">Logros Alcanzados</div>
+      </div>
+
+      <div class="stat-card card-blue">
+        <div class="stat-header">
+          <span class="stat-label">Pendientes</span>
+          <span class="stat-icon">⏳</span>
+        </div>
+        <div class="stat-value" id="stat-pending" style="color:var(--retro-orange);">--</div>
+        <div class="stat-footer">Por Conquistar</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-label">Racha Hábitos</span>
+          <span class="stat-icon">🔥</span>
+        </div>
+        <div class="stat-value" id="stat-streak" style="font-size:32px;">--</div>
+        <div class="stat-footer">Disciplina Activa</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-label">Rygon Studio</span>
+          <span class="stat-icon">📦</span>
+        </div>
+        <div class="stat-value" id="stat-inventory" style="color:var(--retro-blue);">--</div>
+        <div class="stat-footer">Items en Catálogo</div>
+      </div>
+    </section>
+
+    <!-- 2. CONSOLA MOTIVACIONAL INTERACTIVA -->
+    <section class="quote-terminal-box">
+      <div class="quote-left">
+        <span class="quote-prompt">[KERNEL]></span>
+        <div>
+          <span class="quote-text" id="quote-display">Cargando inspiración del sistema...</span>
+          <span class="quote-author" id="quote-author"></span>
+        </div>
+      </div>
+      <button class="pixel-btn btn-sm" onclick="fetchNextQuote()">🎲 NUEVA FRASE</button>
+    </section>
+
+    <!-- 3. NAVEGACIÓN POR PESTAÑAS (TABS) -->
+    <nav class="tabs-navigation">
+      <button class="tab-btn active" data-tab="estudios" onclick="switchTab('estudios')">💻 ESTUDIOS Y CURSOS</button>
+      <button class="tab-btn" data-tab="rygon" onclick="switchTab('rygon')">🎨 RYGON STUDIO</button>
+      <button class="tab-btn" data-tab="rutinas" onclick="switchTab('rutinas')">⏰ HÁBITOS & HORARIO</button>
+      <button class="tab-btn" data-tab="notas" onclick="switchTab('notas')">📝 BÓVEDA OBSIDIAN</button>
+      <button class="tab-btn" data-tab="config" onclick="switchTab('config')">⚙️ CONFIGURACIÓN</button>
+    </nav>
+
+    <!-- ==========================================
+         PANEL 1: ESTUDIOS Y CURSOS
+         ========================================== -->
+    <section id="tab-estudios" class="tab-content-panel active">
+      <div class="module-header">
+        <div class="module-title-box">
+          <h2>💻 GESTIÓN DE ESTUDIOS Y RUTAS DE APRENDIZAJE</h2>
+          <p>Sistemas (Python, PHP, SQL, Java, Ciberseguridad), Diseño (Blender, Krita, Ibis) y Electrónica.</p>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button id="btn-filter-pending" class="pixel-btn btn-sm" onclick="togglePendingFilter()">⏳ FILTRO PENDIENTES</button>
+          <button class="pixel-btn btn-green" onclick="openAddStudyModal()">➕ AGREGAR TEMA / CURSO</button>
+        </div>
+      </div>
+
+      <div class="study-tracks-grid" id="studies-container">
+        <!-- Renderizado dinámicamente desde JS -->
+      </div>
+    </section>
+
+    <!-- ==========================================
+         PANEL 2: RYGON STUDIO
+         ========================================== -->
+    <section id="tab-rygon" class="tab-content-panel">
+      <div class="module-header">
+        <div class="module-title-box">
+          <h2>🎨 EMPRENDIMIENTO "RYGON STUDIO"</h2>
+          <p>Taller artesanal, inventario, moodboard de inspiración y cronograma de redes sociales.</p>
+        </div>
+      </div>
+
+      <!-- Subpestañas Rygon -->
+      <div class="rygon-subtabs">
+        <button class="subtab-btn active" data-subtab="taller" onclick="switchRygonSubtab('taller')">🔨 TALLER (CERÁMICA, CROCHET, DIBUJOS)</button>
+        <button class="subtab-btn" data-subtab="inventario" onclick="switchRygonSubtab('inventario')">📦 INVENTARIO & STOCK</button>
+        <button class="subtab-btn" data-subtab="redes" onclick="switchRygonSubtab('redes')">📱 PLANIFICADOR DE REDES (TIKTOK/REELS)</button>
+        <button class="subtab-btn" data-subtab="moodboard" onclick="switchRygonSubtab('moodboard')">✨ BANCO DE INSPIRACIÓN & MOODBOARD</button>
+      </div>
+
+      <!-- Subpanel 1: Taller -->
+      <div id="rygon-taller" class="rygon-subpanel">
+        <div style="display:flex; justify-content:flex-end; margin-bottom:12px;">
+          <button class="pixel-btn btn-green btn-sm" onclick="openAddWorkshopModal()">➕ NUEVA TAREA DE TALLER</button>
+        </div>
+        <div class="study-tracks-grid" id="workshop-container">
+          <!-- Renderizado dinámicamente -->
+        </div>
+      </div>
+
+      <!-- Subpanel 2: Inventario -->
+      <div id="rygon-inventario" class="rygon-subpanel" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <span style="font-size:12px; color:var(--retro-cream-muted);">Sincronizado con: <code>Rygon_Studio/Inventario.md</code></span>
+          <button class="pixel-btn btn-green btn-sm" onclick="openAddInventoryModal()">➕ AGREGAR PRODUCTO</button>
+        </div>
+        <div class="retro-table-wrapper">
+          <table class="retro-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>PRODUCTO</th>
+                <th>CATEGORÍA</th>
+                <th>STOCK</th>
+                <th>PRECIO VENTA</th>
+                <th>COSTO MAT.</th>
+                <th>ESTADO</th>
+                <th>ACCIONES</th>
+              </tr>
+            </thead>
+            <tbody id="inventory-table-body">
+              <!-- Renderizado dinámicamente -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Subpanel 3: Redes Sociales -->
+      <div id="rygon-redes" class="rygon-subpanel" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <span style="font-size:12px; color:var(--retro-cream-muted);">Sincronizado con: <code>Rygon_Studio/Planificador_Redes.md</code></span>
+          <button class="pixel-btn btn-green btn-sm" onclick="openAddSocialModal()">➕ AGENDAR CONTENIDO</button>
+        </div>
+        <div class="retro-table-wrapper">
+          <table class="retro-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>RED</th>
+                <th>TÍTULO / IDEA</th>
+                <th>HOOK / ENFOQUE</th>
+                <th>FECHA</th>
+                <th>ESTADO DINÁMICO</th>
+                <th>ACCIONES</th>
+              </tr>
+            </thead>
+            <tbody id="social-table-body">
+              <!-- Renderizado dinámicamente -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Subpanel 4: Moodboard -->
+      <div id="rygon-moodboard" class="rygon-subpanel" style="display:none;">
+        <div class="moodboard-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <h3 style="font-family:var(--font-pixel); font-size:11px; color:var(--retro-orange);">✨ MOODBOARD MARKDOWN (EDITABLE DIRECTAMENTE)</h3>
+            <button class="pixel-btn btn-green btn-sm" onclick="saveMoodboardContent()">💾 GUARDAR EN OBSIDIAN</button>
+          </div>
+          <textarea id="moodboard-text" class="moodboard-editor" placeholder="Escribe notas, enlaces de Pinterest, paletas y conceptos aquí..."></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         PANEL 3: HÁBITOS Y HORARIOS DIARIOS
+         ========================================== -->
+    <section id="tab-rutinas" class="tab-content-panel">
+      <div class="module-header">
+        <div class="module-title-box">
+          <h2>⏰ HÁBITOS, DISCIPLINA Y HORARIO ESTRUCTURADO</h2>
+          <p>Monitoreo diario de hábitos con streak tracker y bloques de tiempo.</p>
+        </div>
+      </div>
+
+      <div class="habits-schedule-grid">
+        <!-- Panel Izquierdo: Hábitos -->
+        <div class="habits-panel">
+          <div class="streak-card">
+            <div>
+              <div class="streak-title">🔥 RACHA ACTUAL</div>
+              <div class="streak-counter" id="habit-streak-count">7 DÍAS</div>
+            </div>
+            <div id="habit-best-streak" style="font-size:11px; color:var(--retro-cream-muted);">Récord: 21 Días</div>
+          </div>
+
+          <h3 style="font-family:var(--font-pixel); font-size:10px; color:var(--retro-orange); margin-bottom:12px;">
+            CHECKLIST DIARIO (+50 XP c/u)
+          </h3>
+          <div id="habits-list-container">
+            <!-- Renderizado dinámico -->
+          </div>
+        </div>
+
+        <!-- Panel Derecho: Horario Semanal -->
+        <div class="habits-panel">
+          <h3 style="font-family:var(--font-pixel); font-size:10px; color:var(--retro-orange); margin-bottom:12px;">
+            📅 BLOQUES DE PRODUCTIVIDAD (SEMANA)
+          </h3>
+          <div class="retro-table-wrapper">
+            <table class="retro-table">
+              <thead>
+                <tr>
+                  <th>HORARIO</th>
+                  <th>LUN - MIÉ</th>
+                  <th>JUE - VIE</th>
+                  <th>SÁB - DOM</th>
+                </tr>
+              </thead>
+              <tbody id="schedule-table-body">
+                <!-- Renderizado dinámico -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         PANEL 4: OBSIDIAN VAULT EXPLORER Y NOTAS
+         ========================================== -->
+    <section id="tab-notas" class="tab-content-panel">
+      <div class="module-header">
+        <div class="module-title-box">
+          <h2>📝 EXPLORADOR DE NOTAS RÁPIDAS EN OBSIDIAN</h2>
+          <p>Archivos Markdown sincronizados directamente en tu bóveda local de disco.</p>
+        </div>
+        <button class="pixel-btn btn-green" onclick="openAddNoteModal()">➕ NUEVA NOTA .MD</button>
+      </div>
+
+      <div class="notes-grid" id="notes-container">
+        <!-- Renderizado dinámico -->
+      </div>
+    </section>
+
+    <!-- ==========================================
+         PANEL 5: CONFIGURACIÓN
+         ========================================== -->
+    <section id="tab-config" class="tab-content-panel">
+      <div class="module-header">
+        <div class="module-title-box">
+          <h2>⚙️ CONFIGURACIÓN DEL SISTEMA</h2>
+          <p>Ajusta la ruta de tu bóveda de Obsidian y parámetros del servidor local en Fedora.</p>
+        </div>
+      </div>
+
+      <div class="stat-card" style="max-width:700px;">
+        <div class="form-group" style="margin-bottom:14px;">
+          <label>Ruta de Bóveda de Obsidian en Disco (Fedora Linux):</label>
+          <input type="text" id="config-vault-input" class="form-input" value="/home/cristhian/Documentos/thiansito/obsidian_vault">
+          <small style="color:var(--retro-cream-muted);">Puedes cambiar esto a cualquier carpeta de tu disco (ej. ~/Documentos/MiBoveda).</small>
+        </div>
+        <button class="pixel-btn btn-green" onclick="saveVaultConfiguration()">💾 GUARDAR NUEVA RUTA</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==========================================
+       MODALES FLOTANTES
+       ========================================== -->
+
+  <!-- Modal 1: Agregar Estudio / Curso -->
+  <div class="modal-overlay" id="modal-add-study">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>➕ AGREGAR TEMA DE APRENDIZAJE</h3>
+        <button class="pixel-btn btn-sm" onclick="closeModal('modal-add-study')">X</button>
+      </div>
+      <form id="form-add-study" onsubmit="submitAddStudy(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Ruta de Estudio:</label>
+            <select class="form-select" id="study-modal-track" required>
+              <option value="sistemas">💻 Ingeniería de Sistemas & Software</option>
+              <option value="diseno">🎨 Diseño Digital (Blender / Krita / Ibis)</option>
+              <option value="hardware">⚡ Electrónica & Hardware Básico</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Subsección:</label>
+            <input type="text" id="study-modal-section" class="form-input" placeholder="Ej: Python, Blender, Arduino..." required>
+          </div>
+          <div class="form-group">
+            <label>Nombre del Tema / Tarea:</label>
+            <input type="text" id="study-modal-text" class="form-input" placeholder="Ej: Configurar entorno Docker para microservicios" required>
+          </div>
+          <div class="form-group">
+            <label>Etiquetas (Tags):</label>
+            <input type="text" id="study-modal-tags" class="form-input" placeholder="#python #docker">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="pixel-btn" onclick="closeModal('modal-add-study')">CANCELAR</button>
+          <button type="submit" class="pixel-btn btn-green">GUARDAR EN OBSIDIAN</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 2: Agregar Producto a Inventario -->
+  <div class="modal-overlay" id="modal-add-inventory">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>➕ AGREGAR PRODUCTO A RYGON STUDIO</h3>
+        <button class="pixel-btn btn-sm" onclick="closeModal('modal-add-inventory')">X</button>
+      </div>
+      <form id="form-add-inventory" onsubmit="submitAddInventory(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>ID del Producto:</label>
+            <input type="text" id="inv-modal-id" class="form-input" placeholder="P-008">
+          </div>
+          <div class="form-group">
+            <label>Nombre del Producto:</label>
+            <input type="text" id="inv-modal-name" class="form-input" placeholder="Ej: Maceta Pixel Art Gameboy" required>
+          </div>
+          <div class="form-group">
+            <label>Categoría:</label>
+            <select class="form-select" id="inv-modal-cat">
+              <option value="Cerámica">Cerámica</option>
+              <option value="Crochet">Crochet</option>
+              <option value="Pintura">Pintura</option>
+              <option value="Dibujo">Dibujo</option>
+              <option value="Merch">Merch / Empaques</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Stock Disponible:</label>
+            <input type="number" id="inv-modal-stock" class="form-input" value="1" min="0" required>
+          </div>
+          <div class="form-group">
+            <label>Precio de Venta:</label>
+            <input type="text" id="inv-modal-price" class="form-input" placeholder="$35.000" required>
+          </div>
+          <div class="form-group">
+            <label>Costo Material:</label>
+            <input type="text" id="inv-modal-cost" class="form-input" placeholder="$10.000" required>
+          </div>
+          <div class="form-group">
+            <label>Estado Inicial:</label>
+            <select class="form-select" id="inv-modal-status">
+              <option value="Disponible">Disponible</option>
+              <option value="Bajo Stock">Bajo Stock</option>
+              <option value="Casi Agotado">Casi Agotado</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="pixel-btn" onclick="closeModal('modal-add-inventory')">CANCELAR</button>
+          <button type="submit" class="pixel-btn btn-green">GUARDAR PRODUCTO</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 3: Agregar Tarea de Taller -->
+  <div class="modal-overlay" id="modal-add-workshop">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>➕ NUEVA TAREA DE MANUFACTURA (TALLER)</h3>
+        <button class="pixel-btn btn-sm" onclick="closeModal('modal-add-workshop')">X</button>
+      </div>
+      <form id="form-add-workshop" onsubmit="submitAddWorkshop(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Disciplina / Categoría:</label>
+            <select class="form-select" id="ws-modal-cat">
+              <option value="Cerámica">🏺 Cerámica</option>
+              <option value="Crochet">🧶 Crochet</option>
+              <option value="Pinturas & Dibujos">🎨 Pinturas & Dibujos</option>
+              <option value="Empaques & Packaging">📦 Empaques & Packaging</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Descripción de la Tarea:</label>
+            <input type="text" id="ws-modal-text" class="form-input" placeholder="Ej: Hornear lote de 5 tazas esmaltadas" required>
+          </div>
+          <div class="form-group">
+            <label>Etiqueta (Tag):</label>
+            <input type="text" id="ws-modal-tag" class="form-input" placeholder="ceramica">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="pixel-btn" onclick="closeModal('modal-add-workshop')">CANCELAR</button>
+          <button type="submit" class="pixel-btn btn-green">GUARDAR TAREA</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 4: Agregar Redes Sociales -->
+  <div class="modal-overlay" id="modal-add-social">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>➕ AGENDAR CONTENIDO (TIKTOK / REELS)</h3>
+        <button class="pixel-btn btn-sm" onclick="closeModal('modal-add-social')">X</button>
+      </div>
+      <form id="form-add-social" onsubmit="submitAddSocial(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Plataforma:</label>
+            <select class="form-select" id="soc-modal-platform">
+              <option value="TikTok">TikTok</option>
+              <option value="Reels IG">Instagram Reels</option>
+              <option value="YouTube Shorts">YouTube Shorts</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Título del Contenido:</label>
+            <input type="text" id="soc-modal-title" class="form-input" placeholder="Ej: Unboxing de nuevos materiales de arcilla" required>
+          </div>
+          <div class="form-group">
+            <label>Hook / Enfoque:</label>
+            <input type="text" id="soc-modal-hook" class="form-input" placeholder="Ej: Audio viral + ASMR abriendo paquetes" required>
+          </div>
+          <div class="form-group">
+            <label>Fecha Programada:</label>
+            <input type="date" id="soc-modal-date" class="form-input" value="2026-11-15" required>
+          </div>
+          <div class="form-group">
+            <label>Estado Inicial:</label>
+            <select class="form-select" id="soc-modal-status">
+              <option value="💡 Idea">💡 Idea</option>
+              <option value="📝 Guion">📝 Guion</option>
+              <option value="🎬 Grabando">🎬 Grabando</option>
+              <option value="✂️ Editado">✂️ Editado</option>
+              <option value="🚀 Publicado">🚀 Publicado</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="pixel-btn" onclick="closeModal('modal-add-social')">CANCELAR</button>
+          <button type="submit" class="pixel-btn btn-green">AGENDAR EN REDES</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 5: Agregar Nota Markdown en Obsidian -->
+  <div class="modal-overlay" id="modal-add-note">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>➕ NUEVA NOTA MARKDOWN EN OBSIDIAN</h3>
+        <button class="pixel-btn btn-sm" onclick="closeModal('modal-add-note')">X</button>
+      </div>
+      <form id="form-add-note" onsubmit="submitAddNote(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Título de la Nota:</label>
+            <input type="text" id="note-modal-title" class="form-input" placeholder="Ej: Apuntes Arquitectura Limpia Python" required>
+          </div>
+          <div class="form-group">
+            <label>Contenido Markdown:</label>
+            <textarea id="note-modal-content" class="moodboard-editor" placeholder="Escribe aquí en formato Markdown..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>Tags (separados por comas):</label>
+            <input type="text" id="note-modal-tags" class="form-input" placeholder="python, arquitectura, obsidian">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="pixel-btn" onclick="closeModal('modal-add-note')">CANCELAR</button>
+          <button type="submit" class="pixel-btn btn-green">CREAR ARCHIVO .MD</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="/static/js/pixel_fx.js"></script>
+  <script src="/static/js/app.js"></script>
+  <script>
+    async function saveVaultConfiguration() {
+      const newPath = document.getElementById("config-vault-input").value;
+      const res = await apiPost("/api/config", { vault_path: newPath });
+      if (res && res.success) {
+        showToast(`[CONFIG] Bóveda reconfigurada en: ${newPath}`);
+        refreshAllData(true);
+      }
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- Tu código de conexión directo aquí -->
+<script>
+  const SUPABASE_URL = 'https://bayabuvbgzicjdguwntp.supabase.co/rest/v1/';
+  const SUPABASE_KEY = 'sb_publishable_xO_j-7zP5fMAFEpH8l4nHg_6C9qQW5a';
+  const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  async function probarConexion() {
+      const { data, error } = await _supabase.from('dashboard_items').select('*');
+      if (error) console.error('Error:', error);
+      else console.log('¡Conectado a Supabase con éxito!', data);
+  }
+  
+  probarConexion();
+</script>
+  
+</body>
+</html>

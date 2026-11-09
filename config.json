@@ -1,0 +1,17 @@
+{
+    "server": {
+        "host": "0.0.0.0",
+        "port": 8080,
+        "debug": true
+    },
+    "obsidian": {
+        "vault_path": "/home/cristhian/Documentos/thiansito/obsidian_vault",
+        "auto_sync_interval_seconds": 5,
+        "create_if_missing": true
+    },
+    "app": {
+        "title": "THIAN-CORE // RETRO WORKSTATION",
+        "version": "1.0.0",
+        "theme": "terminal-orange"
+    }
+}
