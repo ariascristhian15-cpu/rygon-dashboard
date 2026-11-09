@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "obsidian_vault/Rygon_Studio/Planificador_Redes.md",
+                "file": "obsidian_vault/Rutinas/Habitos_Diarios.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Planificador_Redes"
+              "title": "Habitos_Diarios"
             }
           }
         ]
@@ -190,6 +190,9 @@
   },
   "active": "6b17d2b3346707cc",
   "lastOpenFiles": [
+    "obsidian_vault/Rutinas/Horario_Semanal.md",
+    "obsidian_vault/Rygon_Studio/Taller_Tareas.md",
+    "obsidian_vault/Rygon_Studio/Planificador_Redes.md",
     "app.py",
     "static/app.py",
     "templates/index.html",
@@ -202,9 +205,6 @@
     "obsidian_vault/Rygon_Studio/Inspiracion_Moodboard.md",
     "obsidian_vault/Notas/Bienvenida.md",
     "obsidian_vault/Rutinas/Habitos_Diarios.md",
-    "obsidian_vault/Rutinas/Horario_Semanal.md",
-    "obsidian_vault/Rygon_Studio/Taller_Tareas.md",
-    "obsidian_vault/Rygon_Studio/Planificador_Redes.md",
     "obsidian_vault/Estudios/Diseno_Creativo.md",
     "obsidian_vault/Estudios/Ingenieria_Sistemas.md",
     "obsidian_vault/Estudios/Electronica_Hardware.md",
