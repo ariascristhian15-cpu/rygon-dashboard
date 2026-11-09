@@ -5,7 +5,7 @@
         "debug": true
     },
     "obsidian": {
-        "vault_path": "/home/cristhian/Documentos/thiansito/obsidian_vault",
+        "vault_path": "./obsidian_vault",
         "auto_sync_interval_seconds": 5,
         "create_if_missing": true
     },
