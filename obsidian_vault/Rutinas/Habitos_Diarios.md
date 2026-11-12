@@ -20,3 +20,4 @@ Cada hábito cumplido otorga +50 XP al sistema personal.
 - [ ] lectura o leer comic/manwha #organizacion
 - [ ] Desconexión de pantallas 30 min antes de dormir #descanso
 - [ ] Arte digital #Diseño
+- [ ] Electronica ToT

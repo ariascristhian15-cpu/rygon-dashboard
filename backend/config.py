@@ -21,6 +21,27 @@ DEFAULT_CONFIG = {
         "title": "THIAN-CORE // RETRO WORKSTATION",
         "version": "1.0.0",
         "theme": "terminal-orange"
+    },
+    "weekly": {
+        # Identificador general del usuario (single-user por defecto).
+        "user_id": "thian-core",
+        # Cierre automático al terminar el domingo (primer request después).
+        "auto_close_enabled": True,
+        # Economía de XP semanal.
+        "xp_per_task": 25,
+        "xp_per_habit": 50,
+        "xp_per_level": 500,
+        # Carpeta donde se guarda el historial local (fallback offline).
+        "data_dir": str(BASE_DIR / "data")
+    },
+    "supabase": {
+        # Espejo opcional del historial en Supabase.
+        # La clave puede sobreescribirse con SUPABASE_SERVICE_ROLE_KEY.
+        "enabled": True,
+        "url": "https://bayabuvbgzicjdguwntp.supabase.co",
+        "publishable_key": "sb_publishable_xO_j-7zP5fMAFEpH8l4nHg_6C9qQW5a",
+        "table": "weekly_history",
+        "timeout_seconds": 4
     }
 }
 

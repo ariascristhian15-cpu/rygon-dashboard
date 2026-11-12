@@ -13,5 +13,20 @@
         "title": "THIAN-CORE // RETRO WORKSTATION",
         "version": "1.0.0",
         "theme": "terminal-orange"
+    },
+    "weekly": {
+        "user_id": "thian-core",
+        "auto_close_enabled": true,
+        "xp_per_task": 25,
+        "xp_per_habit": 50,
+        "xp_per_level": 500,
+        "data_dir": "./data"
+    },
+    "supabase": {
+        "enabled": true,
+        "url": "https://bayabuvbgzicjdguwntp.supabase.co",
+        "publishable_key": "sb_publishable_xO_j-7zP5fMAFEpH8l4nHg_6C9qQW5a",
+        "table": "weekly_history",
+        "timeout_seconds": 4
     }
 }

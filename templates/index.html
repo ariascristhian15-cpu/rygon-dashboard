@@ -121,6 +121,7 @@
       <button class="tab-btn active" data-tab="estudios" onclick="switchTab('estudios')">💻 ESTUDIOS Y CURSOS</button>
       <button class="tab-btn" data-tab="rygon" onclick="switchTab('rygon')">🎨 RYGON STUDIO</button>
       <button class="tab-btn" data-tab="rutinas" onclick="switchTab('rutinas')">⏰ HÁBITOS & HORARIO</button>
+      <button class="tab-btn" data-tab="historial" onclick="switchTab('historial')">📊 HISTORIAL SEMANAL</button>
       <button class="tab-btn" data-tab="notas" onclick="switchTab('notas')">📝 BÓVEDA OBSIDIAN</button>
       <button class="tab-btn" data-tab="config" onclick="switchTab('config')">⚙️ CONFIGURACIÓN</button>
     </nav>
@@ -294,7 +295,37 @@
     </section>
 
     <!-- ==========================================
-         PANEL 4: OBSIDIAN VAULT EXPLORER Y NOTAS
+         PANEL 4: HISTORIAL SEMANAL & RESETEO DE XP
+         ========================================== -->
+    <section id="tab-historial" class="tab-content-panel">
+      <div class="module-header">
+        <div class="module-title-box">
+          <h2>📊 HISTORIAL SEMANAL & RESETEO DE XP</h2>
+          <p>Registro definitivo de ciclos cerrados. La estructura de cursos, hábitos y Rygon Studio se conserva intacta.</p>
+        </div>
+        <div class="weekly-header-actions">
+          <button class="pixel-btn btn-sm" onclick="syncWeeklyCloud()">☁️ SINCRONIZAR SUPABASE</button>
+          <button class="pixel-btn btn-green" onclick="openCloseWeekModal()">🔒 CERRAR SEMANA</button>
+        </div>
+      </div>
+
+      <div id="weekly-current-panel" class="weekly-current-panel">
+        <div class="weekly-empty">Cargando ciclo semanal...</div>
+      </div>
+
+      <div id="weekly-lifetime-grid" class="stats-grid weekly-lifetime-grid"></div>
+
+      <div class="weekly-history-heading">
+        <h3>🗂️ REGISTRO DE SEMANAS</h3>
+        <span id="weekly-history-count" class="weekly-count-badge">0 CICLOS</span>
+      </div>
+      <div id="weekly-history-grid" class="weekly-history-grid">
+        <div class="weekly-empty">Aún no hay semanas cerradas. Usa "CERRAR SEMANA" para generar el primer registro.</div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         PANEL 5: OBSIDIAN VAULT EXPLORER Y NOTAS
          ========================================== -->
     <section id="tab-notas" class="tab-content-panel">
       <div class="module-header">
@@ -328,6 +359,18 @@
           <small style="color:var(--retro-cream-muted);">Puedes cambiar esto a cualquier carpeta de tu disco (ej. ~/Documentos/MiBoveda).</small>
         </div>
         <button class="pixel-btn btn-green" onclick="saveVaultConfiguration()">💾 GUARDAR NUEVA RUTA</button>
+      </div>
+
+      <div class="stat-card" style="max-width:700px; margin-top:20px; border-color:var(--retro-green);">
+        <h3 style="font-family:var(--font-pixel); font-size:10px; color:var(--retro-green); margin-bottom:10px;">🔒 CIERRE MANUAL DE SEMANA</h3>
+        <p style="font-size:12px; color:var(--retro-cream-muted); margin-bottom:14px;">
+          Guarda el resumen de la semana actual en el historial y reinicia el contador semanal de XP/tareas.
+          Tus cursos, hábitos y productos permanecen intactos.
+        </p>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="pixel-btn btn-green" onclick="openCloseWeekModal()">CERRAR SEMANA AHORA</button>
+          <button class="pixel-btn btn-sm" onclick="syncWeeklyCloud()">☁️ RESPALDAR EN SUPABASE</button>
+        </div>
       </div>
     </section>
 
@@ -544,6 +587,52 @@
     </div>
   </div>
 
+  <!-- Modal 6: Confirmar cierre semanal -->
+  <div class="modal-overlay" id="modal-close-week">
+    <div class="modal-box weekly-modal">
+      <div class="modal-header">
+        <h3>🔒 CIERRE DE CICLO SEMANAL</h3>
+        <button class="pixel-btn btn-sm" onclick="closeModal('modal-close-week')">X</button>
+      </div>
+      <div class="modal-body">
+        <div id="weekly-close-preview"></div>
+        <div class="form-group">
+          <label>Tipo de cierre:</label>
+          <select class="form-select" id="weekly-close-status">
+            <option value="completed">✅ COMPLETED — Cierre normal de semana</option>
+            <option value="reset">🔄 RESET — Reinicio forzado del ciclo</option>
+          </select>
+        </div>
+        <label class="weekly-force-row">
+          <input type="checkbox" id="weekly-close-force" class="pixel-checkbox">
+          <span>Forzar si ya existe un registro para este periodo</span>
+        </label>
+        <p class="weekly-warning">
+          ⚠️ Se guardará un registro definitivo y el contador semanal volverá a 0.
+          Los archivos Markdown de Obsidian no se eliminan ni se desmarcan.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="pixel-btn" onclick="closeModal('modal-close-week')">CANCELAR</button>
+        <button type="button" class="pixel-btn btn-green" id="btn-confirm-close-week" onclick="confirmCloseWeek()">CONFIRMAR CIERRE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 7: Reporte / resumen semanal -->
+  <div class="modal-overlay" id="modal-week-summary">
+    <div class="modal-box weekly-modal weekly-summary-modal">
+      <div class="modal-header">
+        <h3 id="weekly-summary-title">📊 REPORTE SEMANAL</h3>
+        <button class="pixel-btn btn-sm" onclick="closeWeeklySummary()">X</button>
+      </div>
+      <div class="modal-body" id="weekly-summary-body"></div>
+      <div class="modal-footer">
+        <button type="button" class="pixel-btn btn-green" onclick="closeWeeklySummary()">CONTINUAR</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Container -->
   <div class="toast-container" id="toast-container"></div>
 
@@ -560,23 +649,10 @@
       }
     }
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<!-- Tu código de conexión directo aquí -->
-<script>
-  const SUPABASE_URL = 'https://bayabuvbgzicjdguwntp.supabase.co/rest/v1/';
-  const SUPABASE_KEY = 'sb_publishable_xO_j-7zP5fMAFEpH8l4nHg_6C9qQW5a';
-  const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-  async function probarConexion() {
-      const { data, error } = await _supabase.from('dashboard_items').select('*');
-      if (error) console.error('Error:', error);
-      else console.log('¡Conectado a Supabase con éxito!', data);
-  }
-  
-  probarConexion();
-</script>
-  
+  <!--
+    Supabase ya no se consulta directamente desde el navegador.
+    El backend de Thian-Core (Python) replica el historial semanal en la
+    tabla `weekly_history` usando los endpoints /api/weekly/*.
+  -->
 </body>
 </html>

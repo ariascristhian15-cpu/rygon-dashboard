@@ -1,0 +1,9 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Historial local personal de Thian-Core
+data/weekly_history.json
+data/weekly_state.json

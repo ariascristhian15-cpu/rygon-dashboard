@@ -24,10 +24,13 @@ except ImportError:
 
 from .config import load_config, save_config
 from .obsidian_sync import ObsidianSyncEngine
+from .weekly_history import WeeklyHistoryManager
 
 if FASTAPI_AVAILABLE:
     config = load_config()
     sync_engine = ObsidianSyncEngine(config["obsidian"]["vault_path"])
+    weekly_manager = WeeklyHistoryManager(sync_engine, config)
+    weekly_manager.maybe_auto_close()
 
     app = FastAPI(
         title="THIAN-CORE API",
@@ -71,6 +74,13 @@ if FASTAPI_AVAILABLE:
     class ConfigPayload(BaseModel):
         vault_path: str
 
+    class WeeklyClosePayload(BaseModel):
+        status: Optional[str] = "completed"
+        force: Optional[bool] = False
+
+    class WeeklyAckPayload(BaseModel):
+        id: str
+
     @app.get("/", response_class=HTMLResponse)
     async def serve_index():
         index_file = BASE_DIR / "templates" / "index.html"
@@ -78,7 +88,40 @@ if FASTAPI_AVAILABLE:
 
     @app.get("/api/stats")
     async def get_stats():
-        return sync_engine.get_summary_stats()
+        stats = sync_engine.get_summary_stats()
+        weekly = weekly_manager.get_current_week()
+        stats["weekly"] = weekly
+        stats["weekly_xp"] = weekly["metrics"]["xp_earned"]
+        stats["weekly_effectiveness"] = weekly["metrics"][
+            "effectiveness_percentage"
+        ]
+        stats["lifetime_xp"] = weekly["lifetime_xp"]
+        stats["lifetime_level"] = weekly["lifetime_level"]
+        return stats
+
+    @app.get("/api/weekly/current")
+    async def get_weekly_current():
+        return weekly_manager.get_current_week()
+
+    @app.get("/api/weekly/history")
+    async def get_weekly_history(remote: bool = False):
+        return weekly_manager.get_history(merge_remote=remote)
+
+    @app.post("/api/weekly/close")
+    async def close_weekly_cycle(data: WeeklyClosePayload):
+        return weekly_manager.close_week(
+            status=data.status or "completed",
+            force=bool(data.force),
+            source="manual",
+        )
+
+    @app.post("/api/weekly/ack")
+    async def acknowledge_weekly_summary(data: WeeklyAckPayload):
+        return weekly_manager.acknowledge(data.id)
+
+    @app.post("/api/weekly/sync")
+    async def sync_weekly_history():
+        return weekly_manager.sync_pending()
 
     @app.get("/api/studies")
     async def get_studies():

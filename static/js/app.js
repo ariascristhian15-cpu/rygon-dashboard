@@ -14,6 +14,12 @@ const AppState = {
   habits: { streak_days: 0, habits: [] },
   schedule: [],
   notes: [],
+  weeklyCurrent: null,
+  weeklyHistory: [],
+  weeklyAggregates: null,
+  weeklySupabase: null,
+  weeklySummaryOpen: false,
+  weeklyAckedIds: new Set(),
   currentTab: "estudios",
   currentRygonSubtab: "taller",
   filterOnlyPending: false
@@ -113,6 +119,7 @@ async function refreshAllData(showNotification = false) {
     loadStudies(),
     loadRygonData(),
     loadHabitsAndSchedule(),
+    loadWeeklyData(),
     loadNotes()
   ]);
 
@@ -141,16 +148,31 @@ function renderStats(stats) {
 }
 
 function renderXPBar(stats) {
-  // Cada tarea completada da +25 XP, hábitos dan +50 XP
-  const xp = (stats.completed_tasks * 25) + (stats.habits_completed * 50);
-  const xpPerLevel = 500;
-  const currentLevel = Math.floor(xp / xpPerLevel) + 1;
-  const currentLevelXP = xp % xpPerLevel;
-  const progressPercent = Math.round((currentLevelXP / xpPerLevel) * 100);
+  // La barra superior muestra la XP del CICLO SEMANAL (se reinicia cada
+  // domingo), mientras el nivel se calcula con la XP histórica acumulada.
+  const weekly = stats.weekly || {};
+  const metrics = weekly.metrics || {};
+  const xpPerLevel = weekly.xp_per_level || 500;
+  const weeklyXP = Number(
+    metrics.xp_earned !== undefined
+      ? metrics.xp_earned
+      : (stats.completed_tasks * 25) + (stats.habits_completed * 50)
+  );
+  const lifetimeXP = Number(
+    stats.lifetime_xp !== undefined ? stats.lifetime_xp : weeklyXP
+  );
+  const currentLevel = stats.lifetime_level || weekly.lifetime_level ||
+    (Math.floor(lifetimeXP / xpPerLevel) + 1);
+  const progressPercent = Math.min(
+    100,
+    Math.round((weeklyXP / xpPerLevel) * 100)
+  );
 
-  document.getElementById("xp-level-display").innerText = `LVL ${currentLevel} // HACKER-ARTISAN`;
+  document.getElementById("xp-level-display").innerText =
+    `LVL ${currentLevel} // HACKER-ARTISAN · CICLO SEMANAL`;
   document.getElementById("xp-fill").style.width = `${progressPercent}%`;
-  document.getElementById("xp-numbers").innerText = `${currentLevelXP} / ${xpPerLevel} XP (${progressPercent}%)`;
+  document.getElementById("xp-numbers").innerText =
+    `${weeklyXP} / ${xpPerLevel} XP SEMANA (${progressPercent}%) · TOTAL ${lifetimeXP} XP`;
 }
 
 function renderQuote(q) {
@@ -686,6 +708,392 @@ async function deleteNote(filename) {
     showToast(`[OBSIDIAN] Nota eliminada`);
     loadNotes();
   }
+}
+
+// ====================================================================
+// MÓDULO 5: HISTORIAL SEMANAL Y RESETEO DE XP
+// ====================================================================
+const WEEKLY_MONTHS = [
+  "ENE", "FEB", "MAR", "ABR", "MAY", "JUN",
+  "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"
+];
+
+function formatWeekDate(value) {
+  if (!value) return "—";
+  const parts = String(value).split("-");
+  if (parts.length !== 3) return value;
+  const day = parseInt(parts[2], 10);
+  const month = parseInt(parts[1], 10) - 1;
+  return `${String(day).padStart(2, "0")} ${WEEKLY_MONTHS[month] || ""}`;
+}
+
+function formatWeekRange(start, end) {
+  return `${formatWeekDate(start)} → ${formatWeekDate(end)}`;
+}
+
+function weeklyStatusLabel(status) {
+  return status === "reset" ? "RESET" : "COMPLETED";
+}
+
+function weeklyModuleChips(breakdown) {
+  const modules = [
+    ["estudios", "💻", "ESTUDIOS"],
+    ["rygon", "🎨", "RYGON"],
+    ["rutinas", "⏰", "HÁBITOS"]
+  ];
+  return modules.map(([key, icon, label]) => {
+    const bucket = (breakdown && breakdown[key]) || {};
+    const total = Number(bucket.total || 0);
+    const done = Number(bucket.completed || 0);
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    return `<span class="module-chip" title="${label}: ${done}/${total}">${icon} ${label} ${done}/${total} · ${pct}%</span>`;
+  }).join("");
+}
+
+async function loadWeeklyData() {
+  const history = await apiGet("/api/weekly/history");
+  const current = await apiGet("/api/weekly/current");
+
+  if (history) {
+    AppState.weeklyHistory = history.records || [];
+    AppState.weeklyAggregates = history.aggregates || null;
+    AppState.weeklySupabase = history.supabase || null;
+    renderWeeklyHistory(history);
+
+    const pending = history.pending_summary;
+    if (
+      pending &&
+      !AppState.weeklySummaryOpen &&
+      !AppState.weeklyAckedIds.has(pending.id)
+    ) {
+      openWeeklySummary(pending, true);
+    }
+  }
+
+  if (current) {
+    AppState.weeklyCurrent = current;
+    renderWeeklyCurrent(current);
+  }
+}
+
+function renderWeeklyCurrent(data) {
+  const panel = document.getElementById("weekly-current-panel");
+  if (!panel) return;
+
+  const metrics = data.metrics || {};
+  const period = data.period || {};
+  const vault = metrics.vault || {};
+  const pct = Number(metrics.effectiveness_percentage || 0);
+  const days = Number(period.days_remaining || 0);
+  const closeLabel = days <= 0
+    ? "CIERRE PENDIENTE"
+    : `CIERRA EN ${days} DÍA${days === 1 ? "" : "S"}`;
+  const pctColor = pct >= 80
+    ? "var(--retro-green)"
+    : (pct >= 50 ? "var(--retro-orange)" : "var(--retro-red)");
+
+  panel.innerHTML = `
+    <div class="weekly-current-card">
+      <div class="weekly-current-head">
+        <div>
+          <div class="weekly-cycle-label">CICLO ACTIVO // SEM ${period.week_number || "—"} · ${formatWeekRange(period.start, period.end)}</div>
+          <div class="weekly-cycle-sub">${closeLabel} · ${data.auto_close_enabled ? "AUTO-CLOSE AL FINAL DEL CICLO" : "CIERRE MANUAL"}</div>
+        </div>
+        <div class="weekly-current-xp">+${metrics.xp_earned || 0}<span>XP SEMANA</span></div>
+      </div>
+      <div class="weekly-metric-row">
+        <div class="weekly-metric"><span class="weekly-big">${metrics.completed_tasks || 0}/${metrics.total_tasks || 0}</span><small>TAREAS SEMANA</small></div>
+        <div class="weekly-metric"><span class="weekly-big" style="color:${pctColor}">${pct}%</span><small>EFECTIVIDAD</small></div>
+        <div class="weekly-metric"><span class="weekly-big">${metrics.pending_tasks || 0}</span><small>PENDIENTES</small></div>
+        <div class="weekly-metric"><span class="weekly-big">${data.lifetime_xp || 0}</span><small>XP TOTAL</small></div>
+      </div>
+      <div class="weekly-progress"><div class="weekly-progress-fill" style="width:${Math.min(100, pct)}%"></div></div>
+      <div class="weekly-vault-line">
+        BÓVEDA COMPLETA: ${vault.completed || 0}/${vault.total || 0} TAREAS (${vault.effectiveness || 0}%)
+        · NIVEL ${data.lifetime_level || 1}
+        · ${data.xp_per_task || 25} XP/TAREA · ${data.xp_per_habit || 50} XP/HÁBITO
+        · ${(data.supabase && data.supabase.configured) ? "☁️ SUPABASE MIRROR" : "💾 LOCAL ONLY"}
+      </div>
+      <div class="weekly-breakdown">${weeklyModuleChips(metrics.breakdown)}</div>
+    </div>
+  `;
+}
+
+function renderWeeklyAggregates(aggregates) {
+  const grid = document.getElementById("weekly-lifetime-grid");
+  if (!grid) return;
+  if (!aggregates || !aggregates.total_weeks) {
+    grid.innerHTML = "";
+    return;
+  }
+  const best = aggregates.best_week || {};
+  grid.innerHTML = `
+    <div class="stat-card card-primary">
+      <div class="stat-header"><span class="stat-label">Semanas Cerradas</span><span class="stat-icon">🗂️</span></div>
+      <div class="stat-value">${aggregates.total_weeks}</div>
+      <div class="stat-footer">${aggregates.completed_weeks || 0} completed · ${aggregates.reset_weeks || 0} reset</div>
+    </div>
+    <div class="stat-card card-success">
+      <div class="stat-header"><span class="stat-label">XP Histórica</span><span class="stat-icon">⚡</span></div>
+      <div class="stat-value" style="color:var(--retro-green);">${aggregates.total_xp || 0}</div>
+      <div class="stat-footer">Acumulada en el historial</div>
+    </div>
+    <div class="stat-card card-blue">
+      <div class="stat-header"><span class="stat-label">Efectividad Media</span><span class="stat-icon">📈</span></div>
+      <div class="stat-value" style="color:var(--retro-blue);">${aggregates.avg_effectiveness || 0}%</div>
+      <div class="stat-footer">Promedio de todos los ciclos</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-header"><span class="stat-label">Mejor Semana</span><span class="stat-icon">🏆</span></div>
+      <div class="stat-value" style="color:var(--retro-orange);">${best.effectiveness_percentage || 0}%</div>
+      <div class="stat-footer">${formatWeekRange(best.week_start_date, best.week_end_date)}</div>
+    </div>
+  `;
+}
+
+function renderWeeklyHistory(history) {
+  const grid = document.getElementById("weekly-history-grid");
+  const count = document.getElementById("weekly-history-count");
+  const records = history.records || [];
+
+  if (count) {
+    count.innerText = `${records.length} CICLO${records.length === 1 ? "" : "S"}`;
+  }
+  renderWeeklyAggregates(history.aggregates);
+
+  if (!grid) return;
+  if (!records.length) {
+    grid.innerHTML = `
+      <div class="weekly-empty">
+        Aún no hay semanas cerradas. Usa "CERRAR SEMANA" para generar el primer registro.
+      </div>
+    `;
+    return;
+  }
+
+  grid.innerHTML = records.map(record => {
+    const pct = Number(record.effectiveness_percentage || 0);
+    const status = record.status === "reset" ? "reset" : "completed";
+    const synced = record.synced ? "☁️" : "💾";
+    return `
+      <article class="weekly-card ${status}">
+        <div class="weekly-card-top">
+          <span class="weekly-card-week">SEM ${record.week_number || "—"}</span>
+          <span class="weekly-status ${status}">${weeklyStatusLabel(status)} ${synced}</span>
+        </div>
+        <div class="weekly-card-range">${formatWeekRange(record.week_start_date, record.week_end_date)}</div>
+        <div class="weekly-card-score">${pct}%</div>
+        <div class="weekly-card-label">EFECTIVIDAD</div>
+        <div class="weekly-progress"><div class="weekly-progress-fill" style="width:${Math.min(100, pct)}%"></div></div>
+        <div class="weekly-card-stats">
+          <span>✅ ${record.completed_tasks || 0}/${record.total_tasks || 0}</span>
+          <span>⚡ ${record.xp_earned || 0} XP</span>
+        </div>
+        <div class="weekly-card-breakdown">${weeklyModuleChips(record.breakdown)}</div>
+        <button class="pixel-btn btn-sm" onclick="openWeeklySummaryById('${record.id}')">🔍 VER REPORTE</button>
+      </article>
+    `;
+  }).join("");
+}
+
+function openWeeklySummaryById(recordId) {
+  const record = (AppState.weeklyHistory || []).find(r => r.id === recordId);
+  if (record) openWeeklySummary(record, false);
+}
+
+function openWeeklySummary(record, automatic = false) {
+  if (!record) return;
+
+  AppState.weeklySummaryOpen = true;
+  AppState.weeklyAckedIds.add(record.id);
+  apiPost("/api/weekly/ack", { id: record.id });
+
+  const pct = Number(record.effectiveness_percentage || 0);
+  const total = Number(record.total_tasks || 0);
+  const completed = Number(record.completed_tasks || 0);
+  const pending = record.pending_tasks !== undefined
+    ? Number(record.pending_tasks)
+    : Math.max(0, total - completed);
+  const breakdown = record.breakdown || {};
+
+  const moduleRows = [
+    ["estudios", "💻", "ESTUDIOS"],
+    ["rygon", "🎨", "RYGON STUDIO"],
+    ["rutinas", "⏰", "HÁBITOS"]
+  ].map(([key, icon, label]) => {
+    const bucket = breakdown[key] || {};
+    const moduleTotal = Number(bucket.total || 0);
+    const moduleDone = Number(bucket.completed || 0);
+    const modulePct = moduleTotal
+      ? Math.round((moduleDone / moduleTotal) * 100)
+      : 0;
+    return `
+      <div class="summary-breakdown-row">
+        <div class="summary-breakdown-label">${icon} ${label}</div>
+        <div class="summary-bar"><div style="width:${modulePct}%"></div></div>
+        <div class="summary-breakdown-value">${moduleDone}/${moduleTotal} · ${modulePct}% · +${bucket.xp || 0} XP</div>
+      </div>
+    `;
+  }).join("");
+
+  const title = document.getElementById("weekly-summary-title");
+  const body = document.getElementById("weekly-summary-body");
+  if (title) {
+    title.innerText = automatic
+      ? "📊 SEMANA FINALIZADA // REPORTE AUTOMÁTICO"
+      : "📊 REPORTE SEMANAL // THIAN-CORE";
+  }
+
+  if (body) {
+    body.innerHTML = `
+      <div class="weekly-summary-hero">
+        <div class="weekly-summary-score">${pct}%</div>
+        <div>
+          <div class="weekly-summary-range">${formatWeekRange(record.week_start_date, record.week_end_date)}</div>
+          <div class="weekly-summary-sub">
+            SEM ${record.week_number || "—"} · ${weeklyStatusLabel(record.status)}
+            · ${record.source === "auto" ? "CIERRE AUTOMÁTICO" : "CIERRE MANUAL"}
+          </div>
+        </div>
+        <div class="weekly-summary-xp">+${record.xp_earned || 0} XP</div>
+      </div>
+
+      <div class="summary-grid">
+        <div><span>${completed}</span><small>TAREAS COMPLETADAS</small></div>
+        <div><span>${total}</span><small>TOTAL DEL CICLO</small></div>
+        <div><span>${pending}</span><small>PENDIENTES</small></div>
+      </div>
+
+      <div class="summary-breakdown">
+        <h4>RENDIMIENTO POR MÓDULO</h4>
+        ${moduleRows}
+      </div>
+
+      <p class="weekly-summary-note">
+        ${automatic
+          ? "El ciclo se cerró automáticamente. El contador semanal ya está en 0 y tus cursos, hábitos y productos siguen intactos."
+          : "Registro guardado. El contador semanal se reinició sin modificar la estructura de tu bóveda de Obsidian."}
+      </p>
+    `;
+  }
+
+  const modal = document.getElementById("modal-week-summary");
+  if (modal) modal.classList.add("active");
+  window.pixelFX.playSuccessSound();
+}
+
+function closeWeeklySummary() {
+  window.pixelFX.playKeyClick();
+  const modal = document.getElementById("modal-week-summary");
+  if (modal) modal.classList.remove("active");
+  AppState.weeklySummaryOpen = false;
+}
+
+function openCloseWeekModal() {
+  window.pixelFX.playKeyClick();
+  const data = AppState.weeklyCurrent;
+  const preview = document.getElementById("weekly-close-preview");
+
+  if (!data) {
+    showToast("No se pudo cargar el ciclo actual. Sincroniza e intenta de nuevo.", "error");
+    return;
+  }
+
+  const metrics = data.metrics || {};
+  const pct = Number(metrics.effectiveness_percentage || 0);
+  if (preview) {
+    preview.innerHTML = `
+      <div class="weekly-close-preview">
+        <div class="weekly-cycle-label">${formatWeekRange(data.period.start, data.period.end)}</div>
+        <div class="weekly-close-numbers">
+          <div><span>${metrics.completed_tasks || 0}/${metrics.total_tasks || 0}</span><small>TAREAS</small></div>
+          <div><span>${pct}%</span><small>EFECTIVIDAD</small></div>
+          <div><span>+${metrics.xp_earned || 0}</span><small>XP</small></div>
+        </div>
+      </div>
+    `;
+  }
+
+  const force = document.getElementById("weekly-close-force");
+  if (force) force.checked = false;
+  const status = document.getElementById("weekly-close-status");
+  if (status) status.value = "completed";
+
+  const modal = document.getElementById("modal-close-week");
+  if (modal) modal.classList.add("active");
+}
+
+async function confirmCloseWeek() {
+  const button = document.getElementById("btn-confirm-close-week");
+  const statusSelect = document.getElementById("weekly-close-status");
+  const forceCheckbox = document.getElementById("weekly-close-force");
+  const status = statusSelect ? statusSelect.value : "completed";
+  const force = forceCheckbox ? forceCheckbox.checked : false;
+
+  if (button) {
+    button.disabled = true;
+    button.innerText = "GUARDANDO...";
+  }
+
+  const result = await apiPost("/api/weekly/close", { status, force });
+
+  if (button) {
+    button.disabled = false;
+    button.innerText = "CONFIRMAR CIERRE";
+  }
+
+  if (!result) return;
+
+  if (!result.closed) {
+    if (result.reason === "already_closed") {
+      showToast("[WEEKLY] Ya existe un registro para este periodo.", "info");
+    } else if (result.reason === "empty_week") {
+      showToast("[WEEKLY] No hay tareas nuevas para cerrar. Marca tareas o usa 'Forzar'.", "info");
+    } else {
+      showToast(`[WEEKLY] Cierre cancelado: ${result.reason || "desconocido"}`, "error");
+    }
+    return;
+  }
+
+  closeModal("modal-close-week");
+  window.pixelFX.playSuccessSound();
+  showToast(
+    `[WEEKLY] Semana cerrada: ${result.record.completed_tasks}/${result.record.total_tasks} tareas · +${result.record.xp_earned} XP`
+  );
+
+  // Evita que loadWeeklyData abra el modal automático y luego lo abramos
+  // otra vez manualmente con el mismo registro.
+  AppState.weeklyAckedIds.add(result.record.id);
+  await loadWeeklyData();
+  openWeeklySummary(result.record, false);
+}
+
+async function syncWeeklyCloud() {
+  window.pixelFX.playKeyClick();
+  const result = await apiPost("/api/weekly/sync", {});
+  if (!result) return;
+
+  if (!result.configured) {
+    showToast(
+      "[SUPABASE] Configura SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY (o usa config.json) para activar el respaldo.",
+      "info"
+    );
+    return;
+  }
+
+  if (result.synced > 0) {
+    window.pixelFX.playSuccessSound();
+    showToast(`[SUPABASE] ${result.synced} registro(s) sincronizado(s).`);
+  } else if (result.pending > 0) {
+    showToast(
+      `[SUPABASE] ${result.pending} registro(s) pendientes. Revisa la tabla weekly_history y las políticas RLS.`,
+      "error"
+    );
+  } else {
+    showToast("[SUPABASE] Todo el historial ya está respaldado.", "info");
+  }
+
+  await loadWeeklyData();
 }
 
 // ====================================================================

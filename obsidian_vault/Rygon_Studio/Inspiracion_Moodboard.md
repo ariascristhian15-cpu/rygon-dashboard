@@ -16,8 +16,6 @@ Referencias visuales, paletas y conceptos para nuevas colecciones.
 
 ## 🔗 Enlaces y Referencias
 - [Pinterest: Cerámica geométrica y esmaltes mates](https://pinterest.com) - Ideas para texturas con bajorrelieve.
-- [Instagram: Creadores de Amigurumi japoneses](https://instagram.com) - Patrones limpios y proporciones chibi.
-- [Behance: Branding para talleres artesanales](https://behance.net) - Empaques sostenibles con tipografías pixel.
 
 ## 💡 Banco de Ideas de Productos
 - Macetas con forma de consola retro Game Boy donde las plantas simulan el cartucho.

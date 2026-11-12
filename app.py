@@ -15,6 +15,7 @@ import sys
 import json
 import mimetypes
 from pathlib import Path
+from typing import Any
 from http.server import HTTPServer, ThreadingHTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 
@@ -24,10 +25,26 @@ sys.path.insert(0, str(BASE_DIR))
 
 from backend.config import load_config, save_config
 from backend.obsidian_sync import ObsidianSyncEngine
+from backend.weekly_history import WeeklyHistoryManager
 
 # Cargar configuración inicial y sincronizador
 CONFIG = load_config()
 SYNC_ENGINE = ObsidianSyncEngine(CONFIG["obsidian"]["vault_path"])
+WEEKLY_MANAGER = WeeklyHistoryManager(SYNC_ENGINE, CONFIG)
+
+# Si el servidor estuvo apagado durante el domingo, cerramos el ciclo
+# pendiente al arrancar (el resumen quedará como no visto en el frontend).
+try:
+    _startup_close = WEEKLY_MANAGER.maybe_auto_close()
+    if _startup_close and _startup_close.get("closed"):
+        _closed_record = _startup_close["record"]
+        print(
+            "[WEEKLY] Ciclo cerrado automáticamente al arrancar: "
+            f"{_closed_record['week_start_date']} -> "
+            f"{_closed_record['week_end_date']}"
+        )
+except Exception as _weekly_error:  # noqa: BLE001
+    print(f"[WEEKLY] Error en auto-cierre inicial: {_weekly_error}")
 
 class RetroHubRequestHandler(BaseHTTPRequestHandler):
     """Router y manejador de peticiones HTTP REST + Archivos Estáticos."""
@@ -67,6 +84,7 @@ class RetroHubRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         parsed = urlparse(self.path)
         path = parsed.path
+        qs = parse_qs(parsed.query)
 
         # 1. Rutas de Frontend y Estáticos
         if path == "/" or path == "/index.html":
@@ -79,7 +97,30 @@ class RetroHubRequestHandler(BaseHTTPRequestHandler):
         # 2. Rutas de API REST
         try:
             if path == "/api/stats":
-                self._send_json(SYNC_ENGINE.get_summary_stats())
+                stats = SYNC_ENGINE.get_summary_stats()
+                try:
+                    weekly = WEEKLY_MANAGER.get_current_week()
+                    stats["weekly"] = weekly
+                    stats["weekly_xp"] = weekly["metrics"]["xp_earned"]
+                    stats["weekly_effectiveness"] = weekly["metrics"][
+                        "effectiveness_percentage"
+                    ]
+                    stats["lifetime_xp"] = weekly["lifetime_xp"]
+                    stats["lifetime_level"] = weekly["lifetime_level"]
+                except Exception as weekly_error:  # noqa: BLE001
+                    print(f"[WEEKLY] No se pudo calcular el ciclo: {weekly_error}")
+                self._send_json(stats)
+            elif path == "/api/weekly/current":
+                self._send_json(WEEKLY_MANAGER.get_current_week())
+            elif path == "/api/weekly/history":
+                merge_remote = qs.get("remote", ["0"])[0].lower() in (
+                    "1",
+                    "true",
+                    "yes",
+                )
+                self._send_json(
+                    WEEKLY_MANAGER.get_history(merge_remote=merge_remote)
+                )
             elif path == "/api/studies":
                 self._send_json(SYNC_ENGINE.get_studies_data())
             elif path == "/api/rygon/inventory":
@@ -108,7 +149,7 @@ class RetroHubRequestHandler(BaseHTTPRequestHandler):
             self._send_json({"error": str(e)}, status=500)
 
     def do_POST(self):
-        global SYNC_ENGINE
+        global SYNC_ENGINE, WEEKLY_MANAGER
         parsed = urlparse(self.path)
         path = parsed.path
         payload = self._read_json_body()
@@ -118,6 +159,21 @@ class RetroHubRequestHandler(BaseHTTPRequestHandler):
             if path == "/api/sync/trigger":
                 stats = SYNC_ENGINE.get_summary_stats()
                 self._send_json({"status": "synced", "stats": stats})
+
+            # Historial Semanal / Reseteo de XP
+            elif path == "/api/weekly/close":
+                result = WEEKLY_MANAGER.close_week(
+                    status=payload.get("status", "completed"),
+                    force=bool(payload.get("force", False)),
+                    source="manual",
+                )
+                self._send_json(result)
+
+            elif path == "/api/weekly/ack":
+                self._send_json(WEEKLY_MANAGER.acknowledge(payload.get("id")))
+
+            elif path == "/api/weekly/sync":
+                self._send_json(WEEKLY_MANAGER.sync_pending())
 
             # Tareas de Estudios
             elif path == "/api/studies/toggle":
@@ -208,6 +264,7 @@ class RetroHubRequestHandler(BaseHTTPRequestHandler):
                     CONFIG["obsidian"]["vault_path"] = os.path.abspath(os.path.expanduser(new_vault))
                     save_config(CONFIG)
                     SYNC_ENGINE = ObsidianSyncEngine(CONFIG["obsidian"]["vault_path"])
+                    WEEKLY_MANAGER = WeeklyHistoryManager(SYNC_ENGINE, CONFIG)
                 self._send_json({"success": True, "config": CONFIG})
 
             else:

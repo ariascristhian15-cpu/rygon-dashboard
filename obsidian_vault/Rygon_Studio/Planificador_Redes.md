@@ -15,7 +15,7 @@ tags:
 
 Cronograma de grabaciones, hooks y estados de publicación.
 
-| ID     | Red_Social | Titulo_Contenido                             | Enfoque_Hook                             | Fecha_Programada | Estado       |
-| ------ | ---------- | -------------------------------------------- | ---------------------------------------- | ---------------- | ------------ |
-| RED-01 | TikTok     | "Cómo esmaltar una taza en 30 segundos"      | ASMR de sonido de espátula y esmalte     | 2026-11-10       | 🚀 Publicado |
+| ID     | Red_Social | Titulo_Contenido            | Enfoque_Hook                | Fecha_Programada | Estado     |
+| ------ | ---------- | --------------------------- | --------------------------- | ---------------- | ---------- |
+| RED-01 | TikTok     | "mi estudio mostrando todo" | mostrar mi lugar de trabajo | 2026-11-12       | 🚀 Proceso |
 

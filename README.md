@@ -40,8 +40,16 @@ Abre en tu navegador:
 │   ├── config.py               # Cargador y gestor de configuración
 │   ├── obsidian_parser.py      # Parser de Markdown (Frontmatter, Checklists, Tablas)
 │   ├── obsidian_sync.py        # Motor de sincronización bidireccional de la bóveda
+│   ├── weekly_history.py       # Ciclos semanales, XP, reseteo y espejo Supabase
 │   ├── main_fastapi.py         # Variante alternativa en FastAPI con Swagger UI (/docs)
 │   └── sample_data.py          # Plantillas iniciales de Markdown y frases pixel
+│
+├── supabase/
+│   └── weekly_history.sql      # Tabla, RLS, trigger y RPC close_weekly_cycle
+│
+├── data/                       # Historial local (se crea automáticamente)
+│   ├── weekly_history.json
+│   └── weekly_state.json
 │
 ├── static/
 │   ├── css/
@@ -116,6 +124,24 @@ Abre en tu navegador:
 ### 5. Explorador de Bóveda y Notas Rápidas
 - Crea nuevas notas `.md` desde el modal web y se guardarán de inmediato en `obsidian_vault/Notas/`.
 - Visualizador y visor rápido integrado.
+
+### 6. Historial Semanal y Reseteo Automático de XP
+- **Ciclo semanal** con línea base de tareas ya completadas: la XP semanal empieza en 0 sin desmarcar ni borrar cursos, hábitos o tareas de Rygon Studio.
+- **Cierre automático** al terminar el ciclo (primer request después del domingo) y **cierre manual** desde `HISTORIAL` o `CONFIGURACIÓN`.
+- **Registro definitivo** en `data/weekly_history.json` y espejo opcional en la tabla `weekly_history` de Supabase.
+- **Tarjetas retro** con efectividad, XP, tareas completadas/pendientes y desglose por módulo.
+- **Modal de reporte** cuando una semana concluye, con rendimiento de Estudios, Rygon Studio y Hábitos.
+- La barra superior muestra la **XP del ciclo actual**; el nivel se calcula con la XP histórica acumulada.
+
+#### Configurar Supabase
+1. Abre **Supabase Dashboard → SQL Editor** y ejecuta el archivo [`supabase/weekly_history.sql`](supabase/weekly_history.sql).
+2. El proyecto ya trae la URL y la publishable key en `config.json`. Para producción, usa variables de entorno:
+   ```bash
+   export SUPABASE_URL="https://TU-PROYECTO.supabase.co"
+   export SUPABASE_SERVICE_ROLE_KEY="tu-service-role-key"
+   python3 app.py
+   ```
+3. Los cierres se replican automáticamente. Si la tabla no existe o falla la red, el historial local sigue funcionando y puedes reintentar con **☁️ SINCRONIZAR SUPABASE**.
 
 ---
 

@@ -10,7 +10,7 @@ tags: [arte, diseno, 3d, ilustracion]
 
 Técnicas digitales para producción gráfica y assets visuales.
 
-## 🍩 1. Blender 3D
+## 🍩 1.Blender
 - [ ] Navegación en el viewport, atajos de teclado y transformaciones básicas #blender
 - [ ] Modelado de objetos Hard-Surface y uso de modificadores (Bevel, Subdivision) #blender
 - [ ] Escultura digital de personajes orgánicos y retopología #blender (35%)
